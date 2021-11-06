@@ -1,6 +1,7 @@
 {"1.2.0",
 [{<<"cowboy">>,{pkg,<<"cowboy">>,<<"2.8.0">>},1},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"2.9.1">>},2},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"3.0.0">>},0},
  {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},2},
  {<<"wx_cfg_library">>,
   {git,"https://github.com.cnpmjs.org/supermuscleman/wx_cfg_library.git",
@@ -24,7 +25,7 @@
   0},
  {<<"wx_overman">>,
   {git,"https://github.com.cnpmjs.org/supermuscleman/wx_overman.git",
-       {ref,"ac816771c089d99dc9fc4e6cdcd5ad9d514d2385"}},
+       {ref,"ae1c3c730c47ccca000b1369b1b0d78362139734"}},
   0},
  {<<"wx_timer_library">>,
   {git,"https://github.com.cnpmjs.org/supermuscleman/wx_timer_library.git",
@@ -34,9 +35,11 @@
 {pkg_hash,[
  {<<"cowboy">>, <<"F3DC62E35797ECD9AC1B50DB74611193C29815401E53BAC9A5C0577BD7BC667D">>},
  {<<"cowlib">>, <<"61A6C7C50CF07FDD24B2F45B89500BB93B6686579B069A89F88CB211E1125C78">>},
+ {<<"jsx">>, <<"20A170ABD4335FC6DB24D5FAD1E5D677C55DADF83D1B20A8A33B5FE159892A39">>},
  {<<"ranch">>, <<"6B1FAB51B49196860B733A49C07604465A47BDB78AA10C1C16A3D199F7F8C881">>}]},
 {pkg_hash_ext,[
  {<<"cowboy">>, <<"4643E4FBA74AC96D4D152C75803DE6FAD0B3FA5DF354C71AFDD6CBEEB15FAC8A">>},
  {<<"cowlib">>, <<"E4175DC240A70D996156160891E1C62238EDE1729E45740BDD38064DAD476170">>},
+ {<<"jsx">>, <<"37BECA0435F5CA8A2F45F76A46211E76418FBEF80C36F0361C249FC75059DC6D">>},
  {<<"ranch">>, <<"451D8527787DF716D99DC36162FCA05934915DB0B6141BBDAC2EA8D3C7AFC7D7">>}]}
 ].

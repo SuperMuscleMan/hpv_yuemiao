@@ -9,13 +9,16 @@
 
 -define(HEAD_USER_AGENT, {"User_Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63040026)"}).
 -define(HEAD_ACCEPT, {"Accept", "application/json, text/plain, */*"}).
--define(HEAD_CONTENT_TYPE,"application/x-www-form-urlencoded").
 
--define(METHOD_GET_DEPARTMENTS, post).
+-define(HEAD_CONTENT_TYPE_URLENCODED,"application/x-www-form-urlencoded").
+-define(HEAD_CONTENT_TYPE_JSON, "application/json").
+
+%% yuemiao URL
 -define(URL_GET_DEPARTMENTS, "https://wx.scmttec.com/department/department/getDepartments.do").	%% 获取信息列表
 -define(URL_IS_CAN_SUBSCRIBE, "https://wx.scmttec.com/subscribe/subscribe/isCanSubscribe.do"). %% 是否预约状态（需要cookie
+-define(URL_GET_NOT_READ, "https://wx.scmttec.com/message/notice/getNotReadNoticeNum.do"). %% 获取未读通知
 
--define(BODY_GET_DEPARTMENTS, <<"offset=0&limit=100&regionCode=5101&isOpen=1&sortType=1&customId=52">>).%%
+
 
 
 -define(TYPECODE_CANSUBSCRIBE, 1).%% 可预约
