@@ -4,21 +4,19 @@
 -copyright('').
 -author("wmh, SuperMuscleMan@outlook.com").
 %%%=======================EXPORT=======================
--export([send/1]).
+-export([send/1, send_success/1, send_log/1]).
 %%%=======================INCLUDE======================
 -include("vaccineHPV.hrl").
+-include_lib("wx_log_library/include/wx_log.hrl").
 %%%=======================RECORD=======================
 
 %%%=======================DEFINE=======================
--define(TITLE, "有可订阅社区啦！").
-%%-define(URL_PUSH, "https://sctapi.ftqq.com/SCT91235TJxFG5lhFO6Y1TZLU5zdGLmGd.send?title=有可订阅社区啦！&desp=messagecontent").
-%%-define(URL_PUSH, "http://wxpusher.zjiecode.com/api/send/message").
--define(URL_PUSH_ROBOT, "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c752f5d2-104c-4565-a2f0-b20d95bea044").
 -define(URL_ITEM(Id), <<"https://wx.scmttec.com/base/departmentVaccine/item.do?isShowDescribtion=true&showOthers=true&id=", Id/binary>>).
 -define(URL_INDEX, <<"https://wx.scmttec.com/index.html ">>).
 
 -define(APPTOKEN, <<"AT_MyJXgVzfsz15NLhaUBdi9w56kcTsPwbq">>).
--define(WEBHOOK, "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c752f5d2-104c-4565-a2f0-b20d95bea044").
+-define(WEBHOOK_COMPANY, "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c752f5d2-104c-4565-a2f0-b20d95bea044").
+-define(WEBHOOK_SCHOOL, "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=f914111d-050e-4ef9-9279-616b2b363972").
 
 -define(COUNTENT_TYPE_MARKDOWN, 3).
 
@@ -34,21 +32,17 @@ send([]) ->
 	ok;
 send([H1, H2, H3, H4, H5, H6, H7, H8 | T]) ->
 	try
-	    send_([H1, H2, H3, H4, H5, H6, H7, H8])
+		send_([H1, H2, H3, H4, H5, H6, H7, H8])
 	catch
-	    E1:E2:E3  ->
-			ok
-%%			 io:format("MODULE:[~p]-LIINE:[~p] | E1,E2,E3:~p~n", [?MODULE, ?LINE, {E1,E2,E3}])
-	end ,
+		E1:E2:E3 ->
+			?ERR(["Push message failed.", E1, E2, E3])
+	end,
 	send(T);
 send(List) ->
 	send_(List).
 send_(List) ->
-	Countent = pack_item(List, []),
-%%	Body = pack_body(Countent, ?COUNTENT_TYPE_MARKDOWN, [<<"UID_lZoKU72YsTqSgmd4rpl98Xe5kOBf">>]),
-	Body = pack_body(Countent),
-%%	io:format("MODULE:[~p]-LIINE:[~p] | Body:~p~n", [?MODULE, ?LINE, {Body}]),
-%%	Header = [?HEAD_ACCEPT, ?HEAD_USER_AGENT],
+	Countent = pack_new_item(List, []),
+	Body = pack_news(Countent),
 	Header = [],
 	ContentType = ?HEAD_CONTENT_TYPE_JSON,
 	HttpOptions =
@@ -61,12 +55,55 @@ send_(List) ->
 			{full_result, false},
 			{body_format, binary}
 		],
-	Request = {?URL_PUSH_ROBOT, Header, ContentType, Body},
+	Request = {?WEBHOOK_SCHOOL, Header, ContentType, Body},
+	{ok, _Response} = httpc:request(post, Request, HttpOptions, Options).
+
+send_success(Item) ->
+	Content = pack_markdown_content(Item),
+	Body = pack_markdown(Content),
+	Header = [],
+	ContentType = ?HEAD_CONTENT_TYPE_JSON,
+	HttpOptions =
+		[
+			{timeout, timer:seconds(3)}%% 请求超时3s
+		],
+	Options =
+		[
+			{sync, true},
+			{full_result, false},
+			{body_format, binary}
+		],
+	Request = {?WEBHOOK_SCHOOL, Header, ContentType, Body},
 	{ok, Response} = httpc:request(post, Request, HttpOptions, Options),
 	Json = parse_response(Response),
-	ok = check_response(Json).
+	check_response(Json).
+
+send_log(Content) ->
+	Body = pack_markdown(Content),
+	Header = [],
+	ContentType = ?HEAD_CONTENT_TYPE_JSON,
+	HttpOptions =
+		[
+			{timeout, timer:seconds(3)}%% 请求超时3s
+		],
+	Options =
+		[
+			{sync, true},
+			{full_result, false},
+			{body_format, binary}
+		],
+	Request = {?WEBHOOK_COMPANY, Header, ContentType, Body},
+	{ok, {200, Response}} = httpc:request(post, Request, HttpOptions, Options),
+	Json = jsx:decode(Response),
+	case maps:get(<<"errcode">>, Json) of
+		0 ->
+			ok;
+		_ ->
+			?ERR(["Error push log.", Response])
+	end.
+
 %==========================DEFINE=======================
-pack_item([{ImgUrl, Name, Desc} | T], R) ->
+pack_new_item([{ImgUrl, Name, Desc} | T], R) ->
 	Item =
 		[
 			{<<"title">>, Name},
@@ -74,16 +111,34 @@ pack_item([{ImgUrl, Name, Desc} | T], R) ->
 			{<<"url">>, ?URL_INDEX},
 			{<<"picurl">>, ImgUrl}
 		],
-	pack_item(T, [Item |R]);
-pack_item([], R) ->
+	pack_new_item(T, [Item | R]);
+pack_new_item([], R) ->
 	R.
 
-pack_body(Content) ->
+pack_news(Content) ->
 	Body =
 		[
 			{<<"msgtype">>, <<"news">>},
 			{<<"news">>,
 				[{<<"articles">>, Content}]
+			}
+		],
+	jsx:encode(Body).
+
+pack_markdown_content(Item) ->
+	#{<<"name">> := Name, <<"vaccineName">> := Desc} = Item,
+	unicode:characters_to_binary([
+		"## 预约成功！", $\r, $\n,
+		"### 社区名称：", Name, $\r, $\n,
+		"### 详情：", Desc, $\r, $\n
+	]).
+
+pack_markdown(Content) ->
+	Body =
+		[
+			{<<"msgtype">>, <<"markdown">>},
+			{<<"markdown">>,
+				[{<<"content">>, Content}]
 			}
 		],
 	jsx:encode(Body).
@@ -94,7 +149,7 @@ parse_response(Data) ->
 	{err_parse, Data}.
 
 %% 1000表示推送成功
-check_response(#{<<"code">> := 1000})->
+check_response(#{<<"code">> := 1000}) ->
 	ok;
-check_response(Data)->
+check_response(Data) ->
 	{err_check, Data}.
